@@ -1,7 +1,7 @@
 """
 # Dados e primeira analise com LLM
-Modulo completo de tratamento de dados, agregacoes de volume/canal,
-implementacao das Regras 1 e 2 de PLD/AML e comparativo de validacao.
+Modulo completo de auditoria PLD/AML, agregacoes, aplicacao das Regras 1 e 2,
+validacao comparativa e analise de sensibilidade da transacao sem data (CLI-A-5).
 """
 
 import os
@@ -47,9 +47,9 @@ def main():
         axis=1
     )
 
-    print("=" * 70)
+    print("=" * 80)
     print("1. VOLUME TOTAL TRANSACIONADO POR CLIENTE")
-    print("=" * 70)
+    print("=" * 80)
     vol_cliente = df.groupby("cliente_id").agg(
         qtd_operacoes=("id", "count"),
         volume_total_brl=("valor_brl", "sum"),
@@ -58,18 +58,18 @@ def main():
     ).reset_index().sort_values(by="volume_total_brl", ascending=False)
     print(vol_cliente.to_string(index=False))
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 80)
     print("2. QUANTIDADE DE OPERACOES POR CANAL")
-    print("=" * 70)
+    print("=" * 80)
     ops_canal = df.groupby("canal").agg(
         qtd_operacoes=("id", "count"),
         volume_total_brl=("valor_brl", "sum")
     ).reset_index().sort_values(by="qtd_operacoes", ascending=False)
     print(ops_canal.to_string(index=False))
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 80)
     print("3. REGRA 1 — FRACIONAMENTO (SMURFING / STRUCTURING)")
-    print("=" * 70)
+    print("=" * 80)
     df_valid_data = df[df["data"].notnull()].copy()
     regra_1_analise = []
 
@@ -99,9 +99,9 @@ def main():
     sinalizados_r1 = df_regra_1[df_regra_1["SINALIZADO_REGRA_1"] == True]
     print(sinalizados_r1.to_string(index=False))
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 80)
     print("4. REGRA 2 — VALOR ATIPICO (OUTLIER)")
-    print("=" * 70)
+    print("=" * 80)
     contagem_cliente = df.groupby("cliente_id")["id"].count()
     clientes_elegiveis = contagem_cliente[contagem_cliente >= 4].index.tolist()
 
@@ -130,9 +130,9 @@ def main():
     print(f"Clientes elegiveis (>= 4 operacoes): {clientes_elegiveis}")
     print(df_regra_2.to_string(index=False))
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 80)
     print("5. VALIDACAO E COMPARATIVO EXPLICITO (REGRA 1)")
-    print("=" * 70)
+    print("=" * 80)
     casos_comparacao = df_regra_1[
         df_regra_1["cliente_id"].isin(["CLI-A-1", "CLI-A-3", "CLI-A-2"]) &
         df_regra_1["data"].isin(["2026-03-09", "2026-03-05", "2026-03-14"])
@@ -146,6 +146,43 @@ def main():
         "cliente_id", "data", "qtd_operacoes", "soma_brl", "maior_operacao_brl",
         "qtd_ge_3", "soma_gt_50k", "todas_lt_20k", "Status"
     ]].to_string(index=False))
+
+    print("\n" + "=" * 80)
+    print("6. ANALISE DA TRANSACAO SEM DATA (CLI-A-5) E PROVA DE EXECUCAO")
+    print("=" * 80)
+    datas_simulacao = ["2026-03-07", "2026-03-16", "2026-03-26"]
+    ops_datadas_cli5 = df[(df["cliente_id"] == "CLI-A-5") & (df["data"].notnull())].copy()
+    op_sem_data = df[df["id"] == "OP-0017"].iloc[0].to_dict()
+
+    provas = []
+    for d in datas_simulacao:
+        op_sim = op_sem_data.copy()
+        op_sim["data"] = d
+        df_sim = pd.concat([ops_datadas_cli5, pd.DataFrame([op_sim])], ignore_index=True)
+        
+        grupo_d = df_sim[df_sim["data"] == d]
+        qtd_d = len(grupo_d)
+        soma_d = grupo_d["valor_brl"].sum()
+        r1_sinalizado = (qtd_d >= 3) and (soma_d > 50000.00) and (grupo_d["valor_brl"].max() < 20000.00)
+        
+        mediana_sim = df_sim["valor_brl"].median()
+        limite_5x = 5 * mediana_sim
+        r2_sinalizado = (df_sim["valor_brl"].max() > limite_5x)
+        
+        provas.append({
+            "Data Imputada": d,
+            "Ops no Dia": qtd_d,
+            "Soma Dia (BRL)": soma_d,
+            "Regra 1 (Fracionamento)": "NAO ATINGE" if not r1_sinalizado else "ATINGE",
+            "Mediana (BRL)": mediana_sim,
+            "Limite 5x (BRL)": limite_5x,
+            "Maior Op (BRL)": df_sim["valor_brl"].max(),
+            "Regra 2 (Atipico)": "NAO ATINGE" if not r2_sinalizado else "ATINGE",
+            "Veredito": "NAO ELEGIVEL A SUSPEITA MATEMATICA"
+        })
+
+    df_provas = pd.DataFrame(provas)
+    print(df_provas.to_string(index=False))
 
 if __name__ == "__main__":
     main()
