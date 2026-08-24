@@ -101,6 +101,17 @@
       "observacao": ""
     },
     {
+      "id": "OP-0007",
+      "cliente_id": "CLI-A-3",
+      "data": "2026-03-05",
+      "valor": 17200,
+      "moeda": "BRL",
+      "canal": "pix",
+      "tipo": "transferencia_enviada",
+      "contraparte": "Epsilon Consultoria",
+      "observacao": ""
+    },
+    {
       "id": "OP-0010",
       "cliente_id": "CLI-A-4",
       "data": "2026-03-03",
