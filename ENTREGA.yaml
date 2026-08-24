@@ -1,0 +1,9 @@
+# Autodeclaração de Entrega do Desafio PLD
+candidato:
+  nome: ""
+  email: ""
+
+entrega:
+  nivel_1_concluido: false
+  nivel_2_concluido: false
+  observacoes: ""

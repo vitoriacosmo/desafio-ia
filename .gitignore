@@ -1,0 +1,19 @@
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Variáveis de ambiente sensíveis
+.env
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db

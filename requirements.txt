@@ -1,0 +1,5 @@
+# Dependências do Projeto
+pandas
+numpy
+jupyter
+python-dotenv
