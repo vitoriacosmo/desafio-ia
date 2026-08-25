@@ -23,15 +23,10 @@ A solução contempla:
 ## Como Rodar
 
 ### 1. Pré-requisitos
-- Python 3.10 ou superior
+- Python 3.10 ou superior (ou Docker instalado)
 - Chave de API do Google Gemini (`GEMINI_API_KEY`)
 
-### 2. Instalação das Dependências
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configuração do Ambiente (.env)
+### 2. Configuração do Ambiente (.env)
 Copie o template de variáveis de ambiente:
 ```bash
 cp .env.example .env
@@ -47,16 +42,33 @@ GOOGLE_API_KEY=sua_chave_gemini_aqui
 LLM_PROVIDER=gemini
 ```
 
-### 4. Execução do Projeto
+### 3. Opção A: Execução Local com Python
 
-- **Execução via Script Python**:
+Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+- **Via Script Python**:
   Executa a esteira ponta a ponta, imprime as validações e salva todos os artefatos gerados em `outputs/`:
   ```bash
   python nivel_1/analise_dados.py
   ```
 
-- **Execução via Jupyter Notebook**:
+- **Via Jupyter Notebook**:
   Abra e execute todas as células de [nivel_1/nivel_1.ipynb](nivel_1/nivel_1.ipynb) para visualizar o fluxo interativo, gráficos de volumetria e saídas dos modelos.
+
+### 4. Opção B: Execução com Docker
+
+Construa a imagem Docker:
+```bash
+docker build -t desafio-pld .
+```
+
+Execute o container passando o arquivo `.env`:
+```bash
+docker run --rm --env-file .env desafio-pld
+```
 
 ## Estrutura do Projeto
 
@@ -81,8 +93,10 @@ LLM_PROVIDER=gemini
 │   ├── parecer_cli_a1.json
 │   ├── volume_por_canal.csv
 │   └── volume_por_cliente.csv
+├── .dockerignore
 ├── .env.example
 ├── .gitignore
+├── Dockerfile
 ├── ENTREGA.yaml
 ├── README.md
 └── requirements.txt
