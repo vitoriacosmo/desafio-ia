@@ -1,9 +1,23 @@
-# Autodeclaração de Entrega do Desafio PLD
-candidato:
-  nome: ""
-  email: ""
+candidato: "Vitória Cosmo"
+modelo_usado: "gemini-3.7-flash"
+provedor: "google-ai-studio"
+horas_dedicadas: 6
 
-entrega:
-  nivel_1_concluido: false
-  nivel_2_concluido: false
-  observacoes: ""
+nivel_1:
+  limpeza_dados:      {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 4"}
+  regras_pandas:      {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 8"}
+  validacao_regras:   {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 10"}
+  saida_estruturada:  {status: completo, onde: "nivel_1/nivel_1.ipynb, células 12 e 14"}
+  comparacao_prompts: {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 16"}
+
+nivel_2:
+  regras_em_escala: {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}
+  ferramentas:      {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}
+  agente:           {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}
+  lote:             {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}
+  confronto:        {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}
+
+nivel_3:
+  trilha_escolhida: B
+  status: nao_feito
+  plano: "docs/DECISOES.md#nivel_3"
