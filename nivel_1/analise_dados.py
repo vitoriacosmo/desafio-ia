@@ -2,7 +2,7 @@
 Nível 1 — Tratamento de Dados, Regras Determinísticas e Parecer com LLM
 
 Módulo executável completo com a esteira de PLD/AML:
-1. Carga, deduplicação e normalização cambial
+1. Carga, auditoria de integridade de duplicidades e normalização cambial
 2. Agregações estatísticas por cliente e canal
 3. Regras determinísticas de Fracionamento e Valor Atípico
 4. Validação das regras
@@ -180,12 +180,31 @@ def main():
     df_raw = pd.DataFrame(dados_json["operacoes"])
 
     print("=" * 80)
-    print("1. TRATAMENTO E LIMPEZA DOS DADOS")
+    print("1. TRATAMENTO, AUDITORIA DE DUPLICIDADES E LIMPEZA DOS DADOS")
     print("=" * 80)
-    print(f"Total de registros brutos: {len(df_raw)}")
+    print(f"Total de registros brutos recebidos: {len(df_raw)}")
     print(f"Taxa USD/BRL: {taxa_cambio}")
 
-    df_limpo = df_raw.drop_duplicates(subset=["id"], keep="first").copy()
+    # Auditoria de IDs duplicados e integridade de conteúdo
+    dup_ids = df_raw[df_raw.duplicated("id", keep=False)]
+    inconsistentes = dup_ids.groupby("id").filter(
+        lambda g: g.drop(columns="id").nunique().gt(1).any()
+    )
+    identicas = dup_ids.groupby("id").filter(
+        lambda g: g.drop(columns="id").nunique().le(1).all()
+    )
+
+    if not inconsistentes.empty:
+        print("[ALERTA] IDs duplicados com conteúdo divergente identificados (revisão manual necessária):")
+        print(inconsistentes.to_string(index=False))
+    else:
+        print("Auditoria de integridade: Nenhuma divergência de conteúdo encontrada entre IDs repetidos.")
+
+    if not identicas.empty:
+        ids_removidos = identicas["id"].unique().tolist()
+        print(f"Trilha de auditoria: IDs com conteúdo 100% idêntico deduplicados: {ids_removidos}")
+
+    df_limpo = df_raw.drop_duplicates().copy()
     for col in ["id", "cliente_id", "moeda", "canal", "tipo", "contraparte", "observacao"]:
         df_limpo[col] = df_limpo[col].fillna("").astype(str).str.strip()
 
@@ -198,7 +217,7 @@ def main():
 
     df_limpo["data_dt"] = pd.to_datetime(df_limpo["data"], errors="coerce")
     df_limpo["data_valida"] = df_limpo["data_dt"].notnull()
-    print(f"Total de registros após deduplicação: {len(df_limpo)}")
+    print(f"Total de registros válidos após deduplicação estrita: {len(df_limpo)}")
     print(df_limpo[["id", "cliente_id", "data", "valor_brl", "canal", "tipo", "contraparte"]].to_string(index=False))
 
     print("\n" + "=" * 80)
