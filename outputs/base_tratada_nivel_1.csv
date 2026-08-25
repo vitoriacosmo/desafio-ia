@@ -1,0 +1,20 @@
+id,cliente_id,data,valor,moeda,canal,tipo,contraparte,observacao,valor_brl,data_valida,flag_regra_1,n_ops_cli,mediana_cli,limiar_outlier,flag_regra_2,flag_regra_3
+OP-0001,CLI-A-1,2026-03-09,18100,BRL,pix,transferencia_enviada,Alfa Comercio LTDA,,18100.0,True,True,4,17700.0,88500.0,False,False
+OP-0002,CLI-A-1,2026-03-09,17300,BRL,pix,transferencia_enviada,Alfa Comercio LTDA,,17300.0,True,True,4,17700.0,88500.0,False,False
+OP-0003,CLI-A-1,2026-03-09,18800,BRL,ted,transferencia_enviada,Beta Servicos ME,,18800.0,True,True,4,17700.0,88500.0,False,False
+OP-0004,CLI-A-1,2026-03-21,3300,BRL,boleto,pagamento,Gama Distribuidora,,3300.0,True,False,4,17700.0,88500.0,False,False
+OP-0005,CLI-A-2,2026-03-14,25900,BRL,ted,transferencia_enviada,Delta Transportes,,25900.0,True,False,2,26450.0,132250.0,False,False
+OP-0006,CLI-A-2,2026-03-14,27000,BRL,ted,transferencia_enviada,Delta Transportes,,27000.0,True,False,2,26450.0,132250.0,False,False
+OP-0007,CLI-A-3,2026-03-05,17200,BRL,pix,transferencia_enviada,Epsilon Consultoria,,17200.0,True,False,3,16100.0,80500.0,False,False
+OP-0008,CLI-A-3,2026-03-05,15200,BRL,pix,transferencia_enviada,Epsilon Consultoria,,15200.0,True,False,3,16100.0,80500.0,False,False
+OP-0009,CLI-A-3,2026-03-05,16100,BRL,pix,transferencia_enviada,Zeta Importacao,,16100.0,True,False,3,16100.0,80500.0,False,False
+OP-0010,CLI-A-4,2026-03-03,3800,BRL,cartao,pagamento,Alfa Comercio LTDA,,3800.0,True,False,4,5450.0,27250.0,False,False
+OP-0011,CLI-A-4,2026-03-11,5100,BRL,boleto,pagamento,Beta Servicos ME,,5100.0,True,False,4,5450.0,27250.0,False,False
+OP-0012,CLI-A-4,2026-03-18,5800,BRL,pix,transferencia_enviada,Gama Distribuidora,,5800.0,True,False,4,5450.0,27250.0,False,False
+OP-0013,CLI-A-4,2026-03-24,12000,USD,ted,transferencia_recebida,Zeta Importacao,remessa internacional,64800.0,True,False,4,5450.0,27250.0,True,False
+OP-0014,CLI-A-5,2026-03-07,2900,BRL,pix,transferencia_recebida,Delta Transportes,,2900.0,True,False,4,3600.0,18000.0,False,False
+OP-0015,CLI-A-5,2026-03-16,7000,BRL,ted,transferencia_recebida,Epsilon Consultoria,,7000.0,True,False,4,3600.0,18000.0,False,False
+OP-0016,CLI-A-5,2026-03-26,2700,BRL,boleto,pagamento,Beta Servicos ME,,2700.0,True,False,4,3600.0,18000.0,False,False
+OP-0017,CLI-A-5,,4300,BRL,especie,deposito,Gama Distribuidora,data nao capturada pelo sistema,4300.0,False,False,4,3600.0,18000.0,False,True
+OP-0018,CLI-A-6,2026-03-12,8800,BRL,pix,transferencia_enviada,Alfa Comercio LTDA,,8800.0,True,False,2,5100.0,25500.0,False,False
+OP-0019,CLI-A-6,2026-03-28,1400,BRL,cartao,pagamento,Delta Transportes,,1400.0,True,False,2,5100.0,25500.0,False,False

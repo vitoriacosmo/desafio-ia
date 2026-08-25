@@ -14,6 +14,12 @@ A solução contempla:
 5. **Pareceres com LLM e Saída Estruturada**: Integração via API real com schema Pydantic (`ParecerPLD`), relatório de proveniência (`fonte`), medição de latência e consumo de tokens.
 6. **Comparação de Prompts**: Comparação empírica entre a versão Zero-Shot Básica e a versão Especializada em Compliance.
 
+## O que foi entregue
+
+- Nível 1 - tratamento, regras, análise com LLM: completo
+- Nível 2 - escala, ferramentas, agente, lote, confronto: não implementado; plano em docs/DECISOES.md#nivel_2
+- Nível 3: não implementado; plano em docs/DECISOES.md#nivel_3
+
 ## Estrutura do Projeto
 
 ```text

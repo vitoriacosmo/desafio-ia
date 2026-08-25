@@ -1,0 +1,9 @@
+{
+  "total_registros_brutos": 20,
+  "taxa_usd_brl": 5.4,
+  "duplicatas_divergentes": [],
+  "duplicatas_identicas_removidas": [
+    "OP-0007"
+  ],
+  "total_registros_validos": 19
+}

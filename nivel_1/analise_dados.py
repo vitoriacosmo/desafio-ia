@@ -1,5 +1,5 @@
 """
-Nível 1 — Tratamento de Dados, Regras Determinísticas e Parecer com LLM
+Nível 1 - Tratamento de Dados, Regras Determinísticas e Parecer com LLM
 
 Módulo executável completo com a esteira de PLD/AML:
 1. Carga, auditoria de integridade de duplicidades e normalização cambial
@@ -334,6 +334,22 @@ def main():
     print(df_comparacao[["Versão", "Fonte", "Nível de Risco", "Tipologia", "Red Flags", "Latência (ms)", "Tokens"]].to_string(index=False))
     print("\nJustificativa Versão 1:\n", parecer_v1.justificativa)
     print("\nJustificativa Versão 2:\n", parecer_v2.justificativa)
+
+    # Persistência de artefatos na pasta outputs/
+    pasta_outputs = os.path.join(os.path.dirname(__file__), "..", "outputs")
+    if not os.path.exists(pasta_outputs):
+        pasta_outputs = "outputs"
+    os.makedirs(pasta_outputs, exist_ok=True)
+
+    volume_cliente.to_csv(os.path.join(pasta_outputs, "volume_por_cliente.csv"), index=False)
+    ops_canal.to_csv(os.path.join(pasta_outputs, "volume_por_canal.csv"), index=False)
+    df_flagged.drop(columns=["data_dt"], errors="ignore").to_csv(os.path.join(pasta_outputs, "base_tratada_nivel_1.csv"), index=False)
+    df_comparacao.to_csv(os.path.join(pasta_outputs, "comparacao_prompts_cli_a1.csv"), index=False)
+
+    with open(os.path.join(pasta_outputs, "parecer_cli_a1.json"), "w", encoding="utf-8") as f:
+        json.dump(parecer_v2.model_dump(), f, indent=2, ensure_ascii=False)
+
+    print(f"\nArtefatos salvos com sucesso em: {pasta_outputs}")
 
 if __name__ == "__main__":
     main()

@@ -1,49 +1,63 @@
-# Decisões Técnicas, Trade-offs e Limitações
+# Decisões Técnicas, Trade-offs e Planejamento
 
-Este documento consolida as decisões arquiteturais, trade-offs técnicos, limitações identificadas e o planejamento de evolução para a esteira de Prevenção à Lavagem de Dinheiro (PLD/AML).
-
----
-
-## 1. Trade-offs
-
-- **Deduplicação por ID com Alerta de Divergência de Conteúdo**:
-  Poderia ter sido realizada a deduplicação comparando a linha inteira, mas isso esconderia um cenário de alto risco em auditoria: dois registros com o mesmo ID e valores ou atributos divergentes. Optou-se por inspecionar os IDs repetidos, isolar inconsistências para revisão manual e deduplicar automaticamente apenas os registros comprovadamente 100% idênticos (`OP-0007`), mantendo a rastreabilidade na trilha de auditoria.
-
-- **Separação Rígida entre Cálculos Determinísticos e Redação com LLM**:
-  Evitou-se delegar cálculos matemáticos de somatórios ou medianas ao LLM (suscetíveis a alucinações). Todas as agregações e enquadramentos de regras (Regras 1, 2 e 3) são executados via Pandas e repassados como fatos auditáveis ao modelo para a redação do parecer técnico.
+Este documento consolida as decisões arquiteturais tomadas no Nível 1, as limitações identificadas e o planejamento detalhado para o Nível 2 e Nível 3.
 
 ---
 
-## 2. Limitações Identificadas
+## 1. Decisões e Trade-offs: Nível 1
 
-- **Detecção de Fracionamento Restrita ao Mesmo Dia**:
-  A regra determinística atual agrupa transações por `cliente_id` e data exata (`YYYY-MM-DD`). Caso um agente malicioso distribua as operações em dias consecutivos (ex: 2 ou 3 dias subsequentes) para burlar o teto diário de R$ 50.000,00, o agrupamento pontual não sinalizará o fracionamento temporalmente diluído.
+- **Deduplicação por ID com Auditoria de Conteúdo**:
+  Em vez de deduplicar cegamente por linha inteira ou descartar registros silenciosamente por ID, o sistema inspeciona se há divergências de conteúdo entre IDs repetidos (alerta para revisão manual) e remove apenas duplicações 100% idênticas (`OP-0007`), mantendo registro na trilha de auditoria.
 
-- **Comparação Textual Exata de Contrapartes (Sem Fuzzy Matching)**:
-  O pipeline atual trata o nome das contrapartes como string literal. Variações como "Alfa Comercio LTDA", "Alfa Comércio Ltda." ou erros de digitação não são unificados automaticamente. Em cenários reais, isso prejudica a identificação de redes de favorecidos comuns que recebem recursos de múltiplos clientes.
+- **Separação Rígida entre Pandas e LLM**:
+  Evitou-se delegar cálculos matemáticos (somas, contagens e medianas) ao modelo de linguagem. O motor em Pandas processa os dados, aplica as Regras 1, 2 e 3 de forma determinística e injeta os fatos consolidados no contexto do LLM apenas para a redação do parecer técnico estruturado.
+
+---
+
+## 2. Limitações Identificadas: Nível 1
+
+- **Fracionamento Restrito ao Mesmo Dia**:
+  A Regra 1 agrupa operações por cliente e data exata (`YYYY-MM-DD`). Fracionamentos intencionalmente distribuídos ao longo de dias consecutivos não são capturados pela regra diária pontual.
+
+- **Correspondência Textual Exata de Contrapartes**:
+  O código compara strings literais, não unificando automaticamente variações cadastrais ou erros tipográficos (ex: "Alfa Comercio LTDA" vs "Alfa Comércio Ltda.").
 
 ---
 
 ## 3. O que Eu Faria com Mais Tempo
 
-- **Fracionamento em Janela Deslizante (Rolling Window)**:
-  Substituir o agrupamento diário fixo por uma janela deslizante temporal (soma móvel de 3 a 5 dias por cliente) utilizando `rolling()` no Pandas.
-  *Validação*: Criação de base de teste sintética com operações fracionadas distribuídas em 3 dias para confirmar a captura da regra, além de teste com perfis legítimos de alto volume (ex: folha de pagamento) para calibrar a taxa de falsos positivos.
+- **Janela Deslizante (Rolling Window)**:
+  Substituir o agrupamento diário fixo por soma móvel de 3 a 5 dias via `rolling()` no Pandas, validando contra bases sintéticas e perfis legítimos de alto volume (ex: folha de pagamento).
 
-- **Matching Fuzzy e Normalização de Contrapartes**:
-  Implementar biblioteca de similaridade de strings (como `rapidfuzz` ou distância de Levenshtein) para agrupar entidades com pequenas variações antes da execução das regras, com fila de revisão humana para casos limítrofes.
-  *Validação*: Criação de conjunto de dados rotulado com variações conhecidas para medir métricas de precisão e revocação do agrupamento de entidades.
+- **Fuzzy Matching de Contrapartes**:
+  Integrar bibliotecas de similaridade de strings (`rapidfuzz` / Levenshtein) para agrupar entidades correlatas antes da aplicação das regras, com fila de revisão humana para casos limítrofes.
 
-- **Enriquecimento Cadastral Automatizado**:
-  Inclusão de renda/faturamento declarado e atividade econômica do cliente no payload de triagem para avaliar a compatibilidade patrimonial do volume transacionado.
+- **Enriquecimento Cadastral**:
+  Incorporar dados de faturamento/renda declarada e CNAE para validação de compatibilidade patrimonial.
 
 ---
 
 <a name="nivel_2"></a>
-## 4. Planejamento para o Nível 2 (Agente ReAct e Escala)
-- Implementação de ferramentas especializadas em `nivel_2/tools.py` para consulta de regras, histórico e enriquecimento cadastral.
-- Construção de agente autônomo em `nivel_2/agente.py` para processamento de filas e lotes de clientes com geração de saída em `outputs/lote.csv`.
+## 4. Decisões Técnicas e Planejamento: Nível 2
+
+O Nível 2 não foi implementado. Abaixo está o planejamento estruturado das decisões, limitações previstas e plano de continuidade:
+
+### 4.1. Trade-offs Planejados
+- **Módulo Compartilhado vs. Reescrita**: Extração do tratamento de dados e das regras determinísticas para um módulo comum (`common/regras.py`), garantindo reuso testado entre os níveis e consistência analítica na base ampliada de 320 operações e 30 clientes (`dados_nivel_2.json`).
+- **Chamada Seletiva de Ferramentas (Agente ReAct) vs. Consulta Incondicional**: O agente avaliará o contexto inicial do cliente para decidir quais ferramentas consultar sob demanda (`historico_cliente`, `operacoes_do_dia`, `perfil_canal`), otimizando o consumo de tokens e respeitando limites de requisição por minuto (RPM) das APIs.
+
+### 4.2. Limitações Previstas
+- **Rate Limits de Provedores Gratuitos**: O processamento em lote de múltiplos clientes com múltiplas ferramentas por cliente exige controle de taxa (rate limiting) e camada de cache para evitar bloqueios por throttling.
+- **Subjetividade no Critério de Confronto**: A taxa de concordância depende da matriz de referência definida (ex: duas regras acionadas = risco alto); por isso, a justificativa qualitativa do modelo é mais relevante que a métrica isolada.
+
+### 4.3. Plano de Implementação (Partes A a D)
+- **Parte A (Regras em Escala)**: Execução das regras via Pandas sobre os 30 clientes, ranqueando os 10 clientes mais sinalizados (com volume total como critério de desempate) e validação de regressão com os casos do Nível 1.
+- **Parte B (Ferramentas e Agente)**: Construção de `tools.py` com funções puras em Python e `agente.py` utilizando function calling nativo do provedor (Gemini/Groq), evitando o overhead desnecessário de frameworks pesados.
+- **Parte C (Execução em Lote)**: Processamento dos 10 clientes selecionados com persistência em `outputs/lote.csv`, registrando parecer estruturado, latência real e tokens consumidos.
+- **Parte D (Confronto Regra vs. Modelo)**: Implementação de `confronto.py` para calcular a taxa de concordância e documentar a análise qualitativa das divergências (identificando eventuais falsos positivos das regras determinísticas).
+
+---
 
 <a name="nivel_3"></a>
-## 5. Planejamento para o Nível 3 (Trilha B - MCP)
-- Exposição do motor determinístico e do avaliador de risco como servidor Model Context Protocol (MCP) para integração com assistentes de triagem e ferramentas externas de compliance.
+## 5. Planejamento: Nível 3 (Trilha B - MCP)
+- Exposição da esteira de regras e do motor de inferência via servidor Model Context Protocol (MCP), permitindo a conexão padronizada com assistentes e clientes de triagem de compliance.

@@ -1,0 +1,12 @@
+{
+  "cliente_id": "CLI-A-1",
+  "nivel_risco": "alto",
+  "tipologia_suspeita": "Fracionamento de Operações (Smurfing / Estruturação)",
+  "red_flags": [
+    "Múltiplas transferências de alto valor com montantes similares no mesmo dia (09/03/2026)",
+    "Concentração atípica de volume financeiro em um único dia (R$ 54.200,00 em 3 operações)",
+    "Fracionamento de envios para a mesma contraparte (Alfa Comercio LTDA) no mesmo dia via PIX",
+    "Reincidência de alertas na regra de monitoramento (3 acionamentos da Regra 1)"
+  ],
+  "justificativa": "O cliente apresentou um padrão característico de fracionamento de transações no dia 09/03/2026, efetuando três envios de recursos com valores muito próximos (R$ 18.100,00, R$ 17.300,00 e R$ 18.800,00) que somam R$ 54.200,00 em um único dia. Duas dessas operações foram destinadas ao mesmo favorecido. Tal comportamento indica potencial tentativa de burlar parâmetros de monitoramento/alçada (estruturação/smurfing), justificando a atribuição de risco alto e a necessidade de análise aprofundada para eventual comunicação ao COAF."
+}
