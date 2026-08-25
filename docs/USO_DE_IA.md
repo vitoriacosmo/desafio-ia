@@ -6,9 +6,9 @@ Este documento descreve como diferentes modelos de Inteligência Artificial fora
 
 ## 1. Ferramentas e Modelos Utilizados
 
-1. **Gemini 3.7 Flash / Gemini 3.6 Flash (`google-ai-studio`)**:
-   - **Papel**: Modelo principal de inferência automatizada para geração dos pareceres técnicos estruturados de PLD/AML no pipeline de execução do código (`nivel_1/nivel_1.ipynb` e `nivel_1/analise_dados.py`).
-   - **Justificativa**: Alta velocidade de resposta, suporte a chamadas de API com controle de latência/tokens e geração de saídas estruturadas em formato JSON estrito compatível com schema Pydantic.
+1. **Gemini 3.6 Flash (`google-ai-studio`)**:
+   - **Papel**: Modelo de inferência automatizada para geração dos pareceres técnicos estruturados de PLD/AML no pipeline de execução (`nivel_1/nivel_1.ipynb` e `nivel_1/analise_dados.py`) e geração dos arquivos oficiais em `outputs/`.
+   - **Justificativa**: Alta velocidade de resposta, suporte nativo a chamadas de API com controle de latência/tokens e geração de saídas estruturadas em formato JSON estrito compatível com schema Pydantic.
 
 2. **Claude 3.5 Sonnet (`Anthropic`)**:
    - **Papel**: Análise crítica, avaliação de decisões técnicas de compliance, especificidade das regras determinísticas e formulação da esteira de auditoria de dados.

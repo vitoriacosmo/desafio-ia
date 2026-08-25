@@ -12,6 +12,9 @@ Este documento consolida as decisões arquiteturais tomadas no Nível 1, as limi
 - **Separação Rígida entre Pandas e LLM**:
   Evitou-se delegar cálculos matemáticos (somas, contagens e medianas) ao modelo de linguagem. O motor em Pandas processa os dados, aplica as Regras 1 e 2 exigidas pelo desafio e a sinalização adicional de qualidade de dados de forma determinística, injetando os fatos consolidados no contexto do LLM apenas para a redação do parecer técnico estruturado.
 
+- **Tratamento de Falhas Técnicas de IA (Erro de Validação vs. Risco Alto)**:
+  Em caso de falha de parsing ou resposta fora de conformidade de schema pelo modelo de linguagem, o sistema atribui `status_parecer: "erro_validacao"` e define o `nivel_risco: "indeterminado"`, preservando o texto bruto da resposta para auditoria humana. Evitou-se categorizar falhas de infraestrutura/parsing como "risco alto" para não inflacionar indevidamente a volumetria de alertas e relatórios regulatórios.
+
 ---
 
 ## 2. Limitações Identificadas: Nível 1

@@ -1,12 +1,12 @@
 {
   "cliente_id": "CLI-A-1",
   "nivel_risco": "alto",
-  "tipologia_suspeita": "Fracionamento de Operações (Smurfing / Estruturação)",
+  "tipologia_suspeita": "Fracionamento de Transações (Smurfing / Structuring)",
   "red_flags": [
-    "Múltiplas transferências de alto valor com montantes similares no mesmo dia (09/03/2026)",
-    "Concentração atípica de volume financeiro em um único dia (R$ 54.200,00 em 3 operações)",
-    "Fracionamento de envios para a mesma contraparte (Alfa Comercio LTDA) no mesmo dia via PIX",
-    "Reincidência de alertas na regra de monitoramento (3 acionamentos da Regra 1)"
+    "Fracionamento de operações em uma única data (2026-03-09)",
+    "Concentração atípica de alto volume (3 transações no mesmo dia somando BRL 54.200,00)",
+    "Múltiplos disparos de alertas determinísticos (3 ocorrências de flag_regra_1)",
+    "Uso sucessivo e rápido de canais de liquidação imediata/rápida (PIX e TED) para a mesma contraparte ou contrapartes distintas no mesmo dia"
   ],
-  "justificativa": "O cliente apresentou um padrão característico de fracionamento de transações no dia 09/03/2026, efetuando três envios de recursos com valores muito próximos (R$ 18.100,00, R$ 17.300,00 e R$ 18.800,00) que somam R$ 54.200,00 em um único dia. Duas dessas operações foram destinadas ao mesmo favorecido. Tal comportamento indica potencial tentativa de burlar parâmetros de monitoramento/alçada (estruturação/smurfing), justificando a atribuição de risco alto e a necessidade de análise aprofundada para eventual comunicação ao COAF."
+  "justificativa": "O cliente CLI-A-1 apresentou comportamento atípico caracterizado pela concentração de 3 transações de alto valor enviadas no mesmo dia (09/03/2026), somando BRL 54.200,00 de um total de BRL 57.500,00 transacionados. Essas movimentações geraram 3 alertas da Regra 1 (flag_regra_1) e indicam fracionamento de valores em curto intervalo de tempo. Foram utilizados os canais PIX (2 operações), TED (1 operação) e Boleto (1 operação). As contrapartes envolvidas nas transações foram Alfa Comercio LTDA, Beta Servicos ME e Gama Distribuidora."
 }

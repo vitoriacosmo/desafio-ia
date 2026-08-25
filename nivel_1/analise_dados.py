@@ -32,14 +32,16 @@ warnings.filterwarnings("ignore")
 load_dotenv(find_dotenv(usecwd=True))
 
 pd.set_option("display.max_columns", None)
-pd.set_option("display.float_format", lambda x: f"{x:.2f}")
+from typing import List, Literal, Tuple, Dict, Any, Optional
 
 class ParecerPLD(BaseModel):
     cliente_id: str = Field(..., description="ID do cliente")
-    nivel_risco: Literal["baixo", "medio", "alto"] = Field(..., description="Nível de risco")
-    tipologia_suspeita: str = Field(..., description="Tipologia identificada")
+    nivel_risco: Literal["baixo", "medio", "alto", "indeterminado"] = Field(..., description="Nível de risco de PLD")
+    tipologia_suspeita: str = Field(..., description="Tipologia identificada ou status técnico")
     red_flags: List[str] = Field(default_factory=list, description="Lista de red flags")
     justificativa: str = Field(..., description="Justificativa da classificação")
+    status_parecer: Literal["concluido", "erro_validacao"] = Field(default="concluido", description="Status do processamento técnico")
+    texto_bruto_resposta: Optional[str] = Field(default=None, description="Texto bruto retornado pela LLM em caso de erro de parsing")
 
 def extrair_contexto(cliente_id: str, df: pd.DataFrame) -> dict:
     df_c = df[df["cliente_id"] == cliente_id]
@@ -184,16 +186,25 @@ def analisar_com_llm(system_prompt: str, user_prompt: str, cliente_id: str, cont
             dados["nivel_risco"] = str(dados["nivel_risco"]).lower().strip()
             if "médio" in dados["nivel_risco"]:
                 dados["nivel_risco"] = "medio"
-    except Exception:
+        dados["status_parecer"] = "concluido"
+        dados["texto_bruto_resposta"] = None
+        parecer_obj = ParecerPLD(**dados)
+    except Exception as e:
         dados = {
             "cliente_id": cliente_id,
-            "nivel_risco": "alto",
-            "tipologia_suspeita": "Fracionamento de Recursos",
-            "red_flags": ["Falha no parser JSON da resposta"],
-            "justificativa": texto_resposta[:200]
+            "nivel_risco": "indeterminado",
+            "tipologia_suspeita": "Erro de Validação de Schema (Revisão Manual Necessária)",
+            "red_flags": [
+                f"Falha de desserialização/schema: {str(e)}",
+                "Resposta não estruturada conforme esperado"
+            ],
+            "justificativa": "A resposta gerada pelo modelo não atendeu ao schema estruturado exigido. O registro foi classificado com risco indeterminado e o texto bruto foi preservado para auditoria e revisão humana.",
+            "status_parecer": "erro_validacao",
+            "texto_bruto_resposta": texto_resposta[:500]
         }
+        parecer_obj = ParecerPLD(**dados)
         
-    return ParecerPLD(**dados), latencia_ms, tokens, fonte
+    return parecer_obj, latencia_ms, tokens, fonte
 
 def main():
     caminhos = [
@@ -327,7 +338,7 @@ def main():
         "Você é um auditor especialista em Prevenção à Lavagem de Dinheiro (PLD/AML).\n"
         "Diretrizes:\n"
         "1. Baseie-se estritamente nos fatos observados no dossiê.\n"
-        "2. Avalie se as operações caracterizam fracionamento de transações (smurfing/structuring).\n"
+        "2. Interprete os indicadores e flags já calculados pela etapa determinística. Não recalcule valores, quantidades ou limites.\n"
         "3. Identifique as contrapartes e canais utilizados.\n"
         "4. Responda em JSON com os campos: cliente_id, nivel_risco (baixo/medio/alto), tipologia_suspeita, red_flags, justificativa."
     )
