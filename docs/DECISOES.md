@@ -59,37 +59,29 @@ O Nível 2 não foi implementado. Abaixo está o planejamento estruturado das de
 ---
 
 <a name="nivel_3"></a><a name="mcp"></a>
-## 5. Decisões Técnicas e Planejamento: Nível 3 (Trilha B - MCP)
+## 5. Nível 3 - Trilha B (Servidor MCP local)
 
-O Nível 3 (Trilha B: Servidor Model Context Protocol) não foi implementado. Abaixo está o planejamento detalhado da arquitetura, ferramentas expostas, trade-offs e metodologia de teste.
+O Nível 3 não foi implementado. Esta seção descreve o planejamento: por que a trilha B foi escolhida, a arquitetura prevista, as ferramentas e como o funcionamento seria validado.
 
-### 5.1. Contexto e Objetivos da Trilha B
-Implementar um servidor MCP padronizado em Python (`nivel_3/mcp_server.py`) para expor as ferramentas determinísticas e os dados consolidados de PLD/AML para clientes MCP (como Claude Desktop, Cursor ou agentes de triagem bancária), permitindo que qualquer assistente de compliance consulte regras, métricas e dossiês de forma desacoplada e segura.
+### 5.1. Justificativa da escolha da trilha
 
-### 5.2. Trade-offs Planejados
-- **FastMCP vs. Low-Level Protocol**: Utilização do `FastMCP` do SDK oficial da Anthropic/ModelContextProtocol para Python. O FastMCP gera schemas JSON de ferramentas e recursos automaticamente a partir de type hints e docstrings do Python, reduzindo código boilerplate e minimizando risco de inconsistências de schema.
-- **Transporte stdio vs. SSE (Server-Sent Events)**: Implementação inicial sobre transporte padrão `stdio` (focado em execução local e integração direta com o Claude Desktop), mantendo a arquitetura das funções isolada para futura transição para transporte `SSE/HTTP` em caso de microsserviço corporativo.
-- **Servidor Desacoplado do Provedor de LLM**: O servidor MCP atua estritamente como provedor de contexto e ferramentas analíticas (não realiza chamadas diretas a LLMs); a inteligência e o raciocínio ficam sob responsabilidade do cliente MCP conectado.
+Entre as três trilhas, a B (servidor MCP) foi escolhida porque reaproveita diretamente o trabalho já planejado no Nível 2: as três ferramentas (`historico_cliente`, `operacoes_do_dia`, `perfil_canal`) já seriam implementadas como funções Python puras, e expô-las via MCP é uma mudança de camada de transporte, não uma reescrita de lógica. As trilhas A (multiagente) e C (interface conversacional) exigiriam construir componentes novos do zero (orquestração de estado entre agentes, ou uma camada de UI), com risco maior de não terminar dentro do prazo. A trilha B também tem valor prático mais direto para o time de PLD/AML: um servidor MCP permite que qualquer cliente compatível (Claude Desktop, outro agente interno) consulte a base de operações sem acoplamento direto ao código Python, o que se aproxima mais de como essa ferramenta seria de fato consumida em produção.
 
-### 5.3. Ferramentas e Recursos (Tools & Resources)
-O servidor exporia as seguintes interfaces:
+### 5.2. Arquitetura
 
-1. **Ferramentas (Tools)**:
-   - `consultar_historico_cliente(cliente_id: str)`: Retorna contagem de operações, volume total em BRL, mediana, tickets extremos e datas de transação.
-   - `verificar_regras_pld(cliente_id: str)`: Executa as Regras 1 (fracionamento), 2 (outlier) e 3 (integridade/espécie), devolvendo as flags acionadas e justificativas determinísticas.
-   - `extrair_dossie_consolidado(cliente_id: str)`: Monta o payload estruturado completo do cliente (operações, contrapartes e canais) para suporte à redação de pareceres técnicos.
+- Um processo `nivel_3/mcp_server.py`, usando o SDK oficial do Model Context Protocol para Python, expondo via **stdio** as três ferramentas do Nível 2 como *tools* MCP, cada uma com schema de entrada validado (Pydantic, reaproveitando o padrão já usado no `ParecerPLD`).
+- O `agente.py` do Nível 2 deixaria de importar `tools.py` diretamente e passaria a se conectar ao servidor como um cliente MCP, descobrindo as ferramentas dinamicamente via `list_tools` e chamando-as via `call_tool`, em vez de chamada de função Python direta.
+- O servidor rodaria como processo filho, iniciado pelo próprio cliente MCP (padrão stdio do protocolo), sem necessidade de porta de rede exposta.
 
-2. **Recursos (Resources)**:
-   - `pld://normas/bacen_3978`: Recurso estático com diretrizes da Circular BACEN nº 3.978/2020 e parâmetros de comunicação ao COAF.
-   - `pld://regras/catalogo`: Catálogo formal com a definição matemática e regras de negócio de cada flag de monitoramento.
+### 5.3. Ferramentas
 
-### 5.4. Limitações e Governança de Dados
-- **Privacidade e Sigilo Bancário (LC 105/2001 e LGPD)**: O servidor deve operar em modo somente-leitura e mascarar dados sensíveis de contrapartes ou identificadores pessoais quando exportados para clientes externos.
-- **Arquitetura Stateless**: Para garantir escalabilidade e concorrência, o servidor mantém estado nulo, consultando bases em memória (DataFrames indexados) ou banco relacional sem bloqueios de escrita.
+- `mcp` (SDK Python oficial da Anthropic) para implementar o servidor.
+- Reaproveitamento do `pandas` já usado no Nível 2 para a lógica interna de cada tool, sem duplicar código.
+- Documentação de conexão em `docs/ARQUITETURA.md` (ou seção dedicada no README), explicando o comando exato para subir o servidor e como apontar um cliente MCP (Claude Desktop ou um cliente MCP de teste em Python) para ele.
 
-### 5.5. Plano de Implementação e Validação
-- **Arquivo Principal**: `nivel_3/mcp_server.py`.
-- **Configuração de Integração**: Arquivo de exemplo `claude_desktop_config.json` apontando para o interpretador Python do projeto e o script do servidor.
-- **Validação Prática**:
-  - Teste de conformidade de protocolo utilizando o `mcp-inspector` (`npx @modelcontextprotocol/inspector python nivel_3/mcp_server.py`).
-  - Execução de casos de teste sintéticos (invocando `consultar_historico_cliente` e `verificar_regras_pld` para `CLI-A-1` a `CLI-A-5`) para garantir que os retornos batem exatamente com as saídas do Nível 1.
+### 5.4. Como seria validado
+
+1. **Teste de descoberta de ferramentas**: subir o servidor isoladamente e confirmar, via um cliente MCP de teste, que as três ferramentas aparecem com o schema esperado (nomes de parâmetros, tipos).
+2. **Paridade de resultado**: rodar a mesma consulta (ex: `historico_cliente("CLI-A-1")`) via import direto (Nível 2) e via chamada MCP, comparando se o resultado é idêntico, para garantir que a troca de camada de transporte não alterou o comportamento.
+3. **Teste de integração ponta a ponta**: rodar o `agente.py` adaptado, sobre um subconjunto pequeno de clientes, e confirmar que o parecer final gerado é equivalente ao obtido no Nível 2 com chamada direta, validando que o agente consegue de fato orquestrar chamadas de ferramenta através do protocolo, não só localmente.
+4. **Teste de falha controlada**: derrubar o servidor propositalmente durante uma chamada e confirmar que o agente trata o erro de conexão de forma explícita, em vez de falhar silenciosamente.
