@@ -4,11 +4,11 @@ provedor: "google-ai-studio"
 horas_dedicadas: 6
 
 nivel_1:
-  limpeza_dados:      {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 4"}
-  regras_pandas:      {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 8"}
-  validacao_regras:   {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 10"}
-  saida_estruturada:  {status: completo, onde: "nivel_1/nivel_1.ipynb, células 12 e 14"}
-  comparacao_prompts: {status: completo, onde: "nivel_1/nivel_1.ipynb, célula 16"}
+  limpeza_dados:      {status: completo, onde: "nivel_1/nivel_1.ipynb, seções 2 a 4 (células 4, 6 e 8)"}
+  regras_pandas:      {status: completo, onde: "nivel_1/nivel_1.ipynb, seção 6 (célula 12)"}
+  validacao_regras:   {status: completo, onde: "nivel_1/nivel_1.ipynb, seção 7 (célula 14)"}
+  saida_estruturada:  {status: completo, onde: "nivel_1/nivel_1.ipynb, seções 8 e 9 (células 16 e 18)"}
+  comparacao_prompts: {status: completo, onde: "nivel_1/nivel_1.ipynb, seção 9.3 (célula 18)"}
 
 nivel_2:
   regras_em_escala: {status: nao_feito, plano: "docs/DECISOES.md#nivel_2"}

@@ -10,7 +10,7 @@ Este documento consolida as decisões arquiteturais tomadas no Nível 1, as limi
   Em vez de deduplicar cegamente por linha inteira ou descartar registros silenciosamente por ID, o sistema inspeciona se há divergências de conteúdo entre IDs repetidos (alerta para revisão manual) e remove apenas duplicações 100% idênticas (`OP-0007`), mantendo registro na trilha de auditoria.
 
 - **Separação Rígida entre Pandas e LLM**:
-  Evitou-se delegar cálculos matemáticos (somas, contagens e medianas) ao modelo de linguagem. O motor em Pandas processa os dados, aplica as Regras 1, 2 e 3 de forma determinística e injeta os fatos consolidados no contexto do LLM apenas para a redação do parecer técnico estruturado.
+  Evitou-se delegar cálculos matemáticos (somas, contagens e medianas) ao modelo de linguagem. O motor em Pandas processa os dados, aplica as Regras 1 e 2 exigidas pelo desafio e a sinalização adicional de qualidade de dados de forma determinística, injetando os fatos consolidados no contexto do LLM apenas para a redação do parecer técnico estruturado.
 
 ---
 

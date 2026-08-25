@@ -1,4 +1,4 @@
-id,cliente_id,data,valor,moeda,canal,tipo,contraparte,observacao,valor_brl,data_valida,flag_regra_1,n_ops_cli,mediana_cli,limiar_outlier,flag_regra_2,flag_regra_3
+id,cliente_id,data,valor,moeda,canal,tipo,contraparte,observacao,valor_brl,data_valida,flag_regra_1,n_ops_cli,mediana_cli,limiar_outlier,flag_regra_2,flag_qualidade_dados
 OP-0001,CLI-A-1,2026-03-09,18100,BRL,pix,transferencia_enviada,Alfa Comercio LTDA,,18100.0,True,True,4,17700.0,88500.0,False,False
 OP-0002,CLI-A-1,2026-03-09,17300,BRL,pix,transferencia_enviada,Alfa Comercio LTDA,,17300.0,True,True,4,17700.0,88500.0,False,False
 OP-0003,CLI-A-1,2026-03-09,18800,BRL,ted,transferencia_enviada,Beta Servicos ME,,18800.0,True,True,4,17700.0,88500.0,False,False
