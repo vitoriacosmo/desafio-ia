@@ -4,7 +4,7 @@ Nível 1 — Tratamento de Dados, Regras Determinísticas e Parecer com LLM
 Módulo executável completo com a esteira de PLD/AML:
 1. Carga, auditoria de integridade de duplicidades e normalização cambial
 2. Agregações estatísticas por cliente e canal
-3. Regras determinísticas de Fracionamento e Valor Atípico
+3. Regras determinísticas de Fracionamento (Regra 1), Valor Atípico (Regra 2) e Integridade de Dados/Espécie (Regra 3)
 4. Validação das regras
 5. Parecer estruturado com Pydantic e chamada à API real de LLM (Gemini / Groq)
 6. Comparação entre versões de prompt com métricas reais (latência e tokens)
@@ -50,10 +50,11 @@ def extrair_contexto(cliente_id: str, df: pd.DataFrame) -> dict:
         "mediana_brl": float(df_c["valor_brl"].median()),
         "flags_regra_1": int(df_c["flag_regra_1"].sum()),
         "flags_regra_2": int(df_c["flag_regra_2"].sum()),
+        "flags_regra_3": int(df_c["flag_regra_3"].sum()),
         "datas_fracionamento": df_c[df_c["flag_regra_1"]]["data"].dropna().unique().tolist(),
         "canais": df_c["canal"].value_counts().to_dict(),
         "contrapartes": df_c["contraparte"].unique().tolist(),
-        "operacoes": df_c[["id", "data", "valor_brl", "canal", "tipo", "contraparte", "flag_regra_1", "flag_regra_2"]].to_dict(orient="records")
+        "operacoes": df_c[["id", "data", "valor_brl", "canal", "tipo", "contraparte", "flag_regra_1", "flag_regra_2", "flag_regra_3"]].to_dict(orient="records")
     }
 
 def aplicar_regras(df: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +78,7 @@ def aplicar_regras(df: pd.DataFrame) -> pd.DataFrame:
     fracionados["flag_regra_1"] = True
     
     df_out = df_out.merge(fracionados, on=["cliente_id", "data"], how="left")
-    df_out["flag_regra_1"] = df_out["flag_regra_1"].fillna(False)
+    df_out["flag_regra_1"] = df_out["flag_regra_1"].eq(True)
     
     # Regra 2: Valor atípico
     stats_cli = df_out.groupby("cliente_id").agg(
@@ -91,6 +92,11 @@ def aplicar_regras(df: pd.DataFrame) -> pd.DataFrame:
     df_out["flag_regra_2"] = (
         (df_out["n_ops_cli"] >= 4) &
         (df_out["valor_brl"] > df_out["limiar_outlier"])
+    )
+    
+    # Regra 3: Sinalização de integridade de dados e espécie
+    df_out["flag_regra_3"] = (
+        (~df_out["data_valida"]) | (df_out["canal"] == "especie")
     )
     
     return df_out
@@ -245,12 +251,12 @@ def main():
     print("3. REGRAS DETERMINÍSTICAS DE PLD")
     print("=" * 80)
     df_flagged = aplicar_regras(df_limpo)
-    print(df_flagged[["id", "cliente_id", "data", "valor_brl", "canal", "tipo", "flag_regra_1", "flag_regra_2"]].to_string(index=False))
+    print(df_flagged[["id", "cliente_id", "data", "valor_brl", "canal", "tipo", "flag_regra_1", "flag_regra_2", "flag_regra_3"]].to_string(index=False))
 
     print("\n" + "=" * 80)
     print("4. VALIDAÇÃO DAS REGRAS")
     print("=" * 80)
-    print("Validação CLI-A-1 (Fracionamento detectado):")
+    print("Validação CLI-A-1 (Regra 1 - Fracionamento detectado):")
     print(df_flagged[(df_flagged["cliente_id"] == "CLI-A-1") & (df_flagged["data"] == "2026-03-09")][
         ["id", "cliente_id", "data", "valor_brl", "flag_regra_1"]
     ].to_string(index=False))
@@ -268,6 +274,11 @@ def main():
     print("\nValidação CLI-A-4 (Regra 2 - Outlier > 5x a mediana):")
     print(df_flagged[df_flagged["cliente_id"] == "CLI-A-4"][
         ["id", "cliente_id", "data", "valor_brl", "mediana_cli", "limiar_outlier", "flag_regra_2"]
+    ].to_string(index=False))
+
+    print("\nValidação CLI-A-5 (Regra 3 - Integridade de dados e canal espécie):")
+    print(df_flagged[df_flagged["flag_regra_3"]][
+        ["id", "cliente_id", "data", "valor_brl", "canal", "tipo", "observacao", "flag_regra_3"]
     ].to_string(index=False))
 
     print("\n" + "=" * 80)
