@@ -1,5 +1,12 @@
-# Dependências do Projeto
+# Dependências do Projeto PLD / AML
 pandas
 numpy
 jupyter
 python-dotenv
+pydantic
+google-generativeai
+groq
+matplotlib
+seaborn
+nbformat
+nbclient

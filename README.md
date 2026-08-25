@@ -20,6 +20,44 @@ A solução contempla:
 - Nível 2 - escala, ferramentas, agente, lote, confronto: não implementado; plano em docs/DECISOES.md#nivel_2
 - Nível 3: não implementado; plano em docs/DECISOES.md#nivel_3
 
+## Como Rodar
+
+### 1. Pré-requisitos
+- Python 3.10 ou superior
+- Chave de API do Google Gemini (`GEMINI_API_KEY`)
+
+### 2. Instalação das Dependências
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configuração do Ambiente (.env)
+Copie o template de variáveis de ambiente:
+```bash
+cp .env.example .env
+```
+No Windows PowerShell:
+```powershell
+Copy-Item .env.example .env
+```
+Abra o arquivo `.env` e configure sua chave de API:
+```env
+GEMINI_API_KEY=sua_chave_gemini_aqui
+GOOGLE_API_KEY=sua_chave_gemini_aqui
+LLM_PROVIDER=gemini
+```
+
+### 4. Execução do Projeto
+
+- **Execução via Script Python**:
+  Executa a esteira ponta a ponta, imprime as validações e salva todos os artefatos gerados em `outputs/`:
+  ```bash
+  python nivel_1/analise_dados.py
+  ```
+
+- **Execução via Jupyter Notebook**:
+  Abra e execute todas as células de [nivel_1/nivel_1.ipynb](nivel_1/nivel_1.ipynb) para visualizar o fluxo interativo, gráficos de volumetria e saídas dos modelos.
+
 ## Estrutura do Projeto
 
 ```text
