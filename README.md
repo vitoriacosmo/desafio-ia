@@ -24,15 +24,28 @@ A solução contempla:
 
 ```text
 ├── dados/
-│   ├── dados_nivel_1.json  # anexos do e-mail
+│   ├── dados_nivel_1.json
 │   └── dados_nivel_2.json
-├── nivel_1/
-│   ├── nivel_1.ipynb
-│   └── analise_dados.py
 ├── docs/
 │   ├── DECISOES.md
 │   └── USO_DE_IA.md
+├── nivel_1/
+│   ├── analise_dados.py
+│   └── nivel_1.ipynb
+├── nivel_2/
+│   ├── agente.py
+│   ├── confronto.py
+│   └── tools.py
+├── outputs/
+│   ├── auditoria_duplicidades.json
+│   ├── base_tratada_nivel_1.csv
+│   ├── comparacao_prompts_cli_a1.csv
+│   ├── parecer_cli_a1.json
+│   ├── volume_por_canal.csv
+│   └── volume_por_cliente.csv
+├── .env.example
+├── .gitignore
 ├── ENTREGA.yaml
-├── requirements.txt
-└── README.md
+├── README.md
+└── requirements.txt
 ```
